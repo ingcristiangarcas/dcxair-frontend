@@ -1,0 +1,118 @@
+<div class="container">
+    <header class="header">
+      <h1>DCXAir - Búsqueda de Vuelos</h1>
+    </header>
+  
+    <div class="search-panel">
+      <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="origin">Origen (código IATA)</label>
+            <input 
+              type="text" 
+              id="origin" 
+              formControlName="origin" 
+              placeholder="Ej: MAD"
+              class="form-control"
+              [ngClass]="{'is-invalid': originControl?.invalid && originControl?.touched}">
+            <div class="error-message" *ngIf="originControl?.invalid && originControl?.touched">
+              <span *ngIf="originControl?.errors?.['required']">El origen es obligatorio.</span>
+              <span *ngIf="originControl?.errors?.['minlength'] || originControl?.errors?.['maxlength']">
+                El código debe tener 3 letras.
+              </span>
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="destination">Destino (código IATA)</label>
+            <input 
+              type="text" 
+              id="destination" 
+              formControlName="destination" 
+              placeholder="Ej: BCN"
+              class="form-control"
+              [ngClass]="{'is-invalid': destinationControl?.invalid && destinationControl?.touched}">
+            <div class="error-message" *ngIf="destinationControl?.invalid && destinationControl?.touched">
+              <span *ngIf="destinationControl?.errors?.['required']">El destino es obligatorio.</span>
+              <span *ngIf="destinationControl?.errors?.['minlength'] || destinationControl?.errors?.['maxlength']">
+                El código debe tener 3 letras.
+              </span>
+            </div>
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de viaje</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" formControlName="tripType" value="oneway">
+                <span>Solo ida</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" formControlName="tripType" value="roundtrip">
+                <span>Ida y vuelta</span>
+              </label>
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="currency">Moneda</label>
+            <select id="currency" formControlName="currency" class="form-control">
+              <option *ngFor="let currency of currencies" [value]="currency">{{ currency }}</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="form-actions">
+          <button type="submit" [disabled]="searchForm.invalid || loading" class="btn-search">
+            <span *ngIf="!loading">Buscar vuelos</span>
+            <span *ngIf="loading">Buscando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  
+    <!-- Mensajes de error o sin resultados -->
+    <div *ngIf="error" class="alert alert-error">
+      {{ error }}
+    </div>
+  
+    <div *ngIf="noResults && !loading && !error" class="alert alert-info">
+      No se encontraron vuelos para la búsqueda realizada.
+    </div>
+  
+    <!-- Resultados de la búsqueda -->
+    <div *ngIf="routes.length > 0" class="results-container">
+      <h2>Resultados de la búsqueda</h2>
+      
+      <div class="route-list">
+        <div *ngFor="let route of routes" class="route-card">
+          <div class="route-header">
+            <h3>{{ route.isRoundTrip ? 'Ida y vuelta' : 'Solo ida' }}</h3>
+          
+          </div>
+          
+          <div class="route-body">
+            <div *ngFor="let flight of route.flights; let i = index" class="flight-item">
+              <div class="flight-header">
+                <span *ngIf="route.flights.length > 1">{{ i === 0 ? 'Ida' : 'Vuelta' }}</span>
+              </div>
+              
+              <div class="flight-details">
+                <div class="flight-route">
+                  <div class="airport">{{ flight.origin }}</div>
+                  <div class="flight-arrow">→</div>
+                  <div class="airport">{{ flight.destination }}</div>
+                </div>
+                
+                <div class="flight-price">
+                  {{ route.totalPrice | currency:route.currency }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
